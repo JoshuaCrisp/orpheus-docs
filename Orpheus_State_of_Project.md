@@ -1,13 +1,15 @@
 # ORPHEUS: State of the Project
-## Last Updated: April 4, 2026 (Co-Creative Director Session — SDK Review, Creative Direction)
+## Last Updated: April 4, 2026 (Co-Creative Director — SDK Review, Creative Direction, Developer Session Integration)
 
 ---
 
 ## How To Use This Document
 
-**This document is the single source of truth for the Orpheus project.** It lives in the Claude Project knowledge base and is automatically available to every conversation in the project. It is the asynchronous communication channel between conversations.
+**This document is the single source of truth for the Orpheus project.** It lives at https://github.com/JoshuaCrisp/orpheus-docs and is fetched by every conversation before starting work.
 
-Update this document at the end of every work session. Any conversation in the project can update it.
+**Update workflow:** At the end of a session, provide Joshua with specific text changes. Joshua gives those instructions to Claude Code, which edits the file and pushes to GitHub.
+
+**Who can update what:** Any role may report facts (build results, test outcomes, new files, infrastructure changes). Only the Co-Creative Director may author design decisions, open question resolutions, creative direction, and narrative sections.
 
 ---
 
@@ -43,24 +45,25 @@ Dark wet stone. Water is the dominant ambient sound — dripping, flowing, echoi
 ## 2. Project Structure and Roles
 
 ### Team Model
-This project uses multiple Claude conversations within a single Claude Project as a team. Each conversation has a specialized role. The Project Knowledge Base is the shared drive. The State of Project document is the asynchronous communication channel between all conversations.
+This project uses multiple Claude conversations within a single Claude Project as a team. Each conversation has a specialized role. The GitHub docs repo is the shared document store. The State of Project document is the asynchronous communication channel between all conversations.
 
-Joshua Crisp is the facilitator. He opens each conversation, ensures messages are delivered, provides input, and makes final decisions when the team disagrees. He is not a translator between team members — he is the one who opens the door so each conversation can read the others' mail.
+Joshua Crisp is the facilitator. He opens each conversation, ensures messages are delivered, provides input, and makes final decisions when the team disagrees.
 
 ### Roles
 | Role | Status | Responsibilities |
 |------|--------|-----------------|
-| Co-Creative Director (Technical Authority) | ACTIVE — new conversation opened April 4, 2026 | Holds full picture: vision, story, staging, design philosophy, technical architecture, project status, timeline. Makes creative and architectural decisions. Also serves as Project Manager — tracks deadlines and prioritizes work. |
-| Developer | ACTIVE — conversation created April 5, 2026 | Pure implementation: scripts, components, configuration, bug fixes. Takes direction from State of Project and Co-Creative Director decisions. |
-| Researcher | ACTIVE — conversation created April 5, 2026 | Deep-dives into SDK documentation, technical feasibility, experimental features. Reports findings via Inter-Team Messages. May be short-lived per investigation rather than one persistent conversation. |
+| Co-Creative Director (Technical Authority) | ACTIVE — new conversation opened April 4, 2026 | Holds full picture: vision, story, staging, design philosophy, technical architecture, project status, timeline. Makes creative and architectural decisions. Authors all design decisions in this document. |
+| Developer | ACTIVE — conversation created April 5, 2026 | Pure implementation: scripts, components, configuration, bug fixes. Takes direction from State of Project and Co-Creative Director decisions. May update this document with factual reports only. |
+| Researcher | ACTIVE — conversation created April 5, 2026 | Deep-dives into SDK documentation, technical feasibility, experimental features. Reports findings via Inter-Team Messages. May be short-lived per investigation. |
 | Business roles (future) | NOT YET CREATED — defer until working prototype exists | Marketing, funding, distribution |
 
 ### Workflow
 1. Joshua opens the Co-Creative Director conversation first at the start of each session — even briefly — to set direction and priorities
 2. Joshua then opens Developer or Researcher conversations as the work requires
-3. Each conversation checks its Inter-Team Messages before starting work
-4. Each conversation writes messages for other roles when it discovers something relevant
-5. At the end of each work session, Joshua updates the State of Project document with changes from that conversation
+3. Each conversation fetches the State of Project from GitHub before starting work
+4. Each conversation checks its Inter-Team Messages before starting work
+5. Each conversation writes messages for other roles when it discovers something relevant
+6. At the end of each session, updates are pushed to GitHub via Claude Code
 
 ### Dispute Resolution Framework
 
@@ -77,8 +80,8 @@ Joshua Crisp is the facilitator. He opens each conversation, ensures messages ar
 | Milestone | Target Date | Status |
 |-----------|------------|--------|
 | **PROTOTYPE DELIVERY** | **July 11, 2026** | **HARD DEADLINE** |
-| Development pipeline (Claude Code + MCP) | April 4, 2026 | IN PROGRESS — Developer working on it now |
-| Body occlusion working | ASAP — blocks all other work | NOT STARTED — approach confirmed, awaiting pipeline |
+| Development pipeline (Claude Code + MCP) | April 4, 2026 | COMPLETE |
+| Body occlusion working | ASAP — blocks all other work | SCRIPT WRITTEN — awaiting deployment and test |
 | Passthrough-to-VR transition | TBD | NOT STARTED |
 | Spatial audio foundation | TBD | NOT STARTED — promoted to prototype milestone |
 | Torch tracking | TBD | NOT STARTED — pending documentation review |
@@ -114,6 +117,21 @@ Joshua Crisp is the facilitator. He opens each conversation, ensures messages ar
 | Meta XR Platform SDK | 85.0.0 | Unity Asset Store / UPM |
 | Meta XR Audio SDK | 85.0.0 | Unity Asset Store / UPM |
 | Meta XR Haptics SDK | 85.0.0 | Unity Asset Store / UPM |
+
+### Development Tools (Installed April 4, 2026)
+| Tool | Version | Notes |
+|------|---------|-------|
+| Claude Code CLI | latest (native installer) | Connected to Unity via MCP |
+| CoplayDev unity-mcp | beta (git) | Unity Package Manager, `https://github.com/CoplayDev/unity-plugin.git#beta` |
+| Python | 3.13.12 | Homebrew (required by MCP server) |
+| uv/uvx | 0.11.3 | Required by MCP server |
+| Homebrew | 5.1.3 | macOS package manager |
+| Git | system | GitHub docs repo at https://github.com/JoshuaCrisp/orpheus-docs |
+
+### Unity Project Location
+```
+/Users/lab/Desktop/Orpheus in the Underworld/Technical/Unity Project/Orpheus Prototype
+```
 
 ### ADB Path (for log checking)
 ```
@@ -188,14 +206,15 @@ Point Light (Position: 0,2,0)
 | HandOcclusionMaterial | Custom/DepthOnlyHand | N/A (invisible) | Writes depth only, renders no color |
 
 ### Custom Scripts
-| Script | Location | Purpose |
-|--------|----------|---------|
-| InvertMesh.cs | Assets/Scripts | Flips sphere normals so cave renders inside-out |
-| DepthOnlyHand (Shader) | Assets/Scripts | ZWrite On, ColorMask 0 — invisible depth writer |
-| RequestSpatialPermission.cs | Assets/Scripts | Requests com.oculus.permission.USE_SCENE on startup |
-| RequestBodyTracking.cs | Assets/Scripts | Requests com.oculus.permission.BODY_TRACKING on startup |
-| BodyTrackingDebug.cs | Assets/Scripts | Logs body tracking status to console (debug only) |
-| PassthroughStyling.cs | Assets/Scripts | REMOVED from scene — replaced by Inspector Color Adjustment sliders |
+| Script | Location | Purpose | Status |
+|--------|----------|---------|--------|
+| InvertMesh.cs | Assets/Scripts | Flips sphere normals so cave renders inside-out | Active |
+| DepthOnlyHand (Shader) | Assets/Scripts | ZWrite On, ColorMask 0 — invisible depth writer | Active |
+| RequestSpatialPermission.cs | Assets/Scripts | Requests com.oculus.permission.USE_SCENE on startup | Active |
+| RequestBodyTracking.cs | Assets/Scripts | Requests com.oculus.permission.BODY_TRACKING on startup | Active |
+| BodyTrackingDebug.cs | Assets/Scripts | Logs body tracking status to console (debug only) | Active |
+| PassthroughStyling.cs | Assets/Scripts | REMOVED from scene — replaced by Inspector Color Adjustment sliders | Inactive |
+| CapsuleBodyOcclusion.cs | Assets/Scripts | Reads OVRPlugin.GetBodyState(), creates 12 capsule segments + head sphere, applies depth-only shader | WRITTEN — not yet added to project |
 
 ### Fog Settings
 - Enabled via Window → Rendering → Lighting → Environment
@@ -217,6 +236,8 @@ Point Light (Position: 0,2,0)
 - **Floor tracking**: Floor level is correct (Tracking Origin: Floor Level)
 - **Body tracking data**: OVR Body running with FullBody skeleton at ~36fps (confirmed via adb logcat)
 - **Build pipeline**: USB build and run to Quest 3 works reliably
+- **Claude Code ↔ Unity pipeline**: Claude Code connected to Unity via CoplayDev MCP bridge. Can create/modify GameObjects, components, and scripts from Terminal or VS Code. Tested successfully April 4 (created and deleted a test cube).
+- **GitHub docs repo**: State of Project document hosted at https://github.com/JoshuaCrisp/orpheus-docs — editable via Claude Code, fetchable by all conversations.
 
 ---
 
@@ -224,11 +245,11 @@ Point Light (Position: 0,2,0)
 
 ### Body Occlusion (CRITICAL — Blocks Progress)
 - Body tracking DATA is flowing (confirmed via logs)
-- No visible body mesh exists to use as occlusion mask
-- **Approach confirmed (April 4/5):** Movement SDK Character Retargeter + depth-only shader. Capsule-person (primitives parented to skeleton joints) is the first-pass approach. See Resolved Messages for full Researcher findings.
-- The Depth API (EnvironmentDepthManager) must remain DISABLED — it occludes everything in the room, not just the body.
-- AI Building Blocks do NOT solve this problem — no image segmentation exists in v85.
-- Developer has been given implementation instructions.
+- **Approach confirmed:** Movement SDK body tracking joints + capsule primitives with depth-only shader.
+- **Script written (CapsuleBodyOcclusion.cs):** 12 capsule segments + 1 head sphere, driven by OVRPlugin.GetBodyState(), using existing HandOcclusionMaterial. Includes debug mode (gray capsules for verification). Does NOT use EnvironmentDepthManager, AI Building Blocks, or Character Retargeter.
+- **Not yet deployed.** Next step: add script to project, create BodyOcclusion GameObject, wire references, build and test.
+- **Caveat:** OVRPlugin API signatures may differ slightly in v85. If compile errors occur, error messages will be specific and fixable.
+- The Depth API (EnvironmentDepthManager) must remain DISABLED.
 
 ### Hand Occlusion Border/Halo
 - Thin border of real world visible around hand edges
@@ -245,15 +266,15 @@ Point Light (Position: 0,2,0)
 ## 7. Technical Challenges To Solve
 
 ### Tier 1: Must Solve for Prototype
-1. **Full body occlusion** — See player's real body in VR cave without showing the room. Approach confirmed; implementation pending.
-2. **Torch tracking** — Track a physical prop while player carries it
+1. **Full body occlusion** — See player's real body in VR cave without showing the room. Approach confirmed; script written; awaiting deployment and test.
+2. **Torch tracking** — Track a physical prop while player carries it.
 3. **Passthrough-to-VR transition** — Gradual blend from real world into underworld. Selective Passthrough shader is a strong candidate (see Section 18). Narrative justification for the transition is an open question.
 
 ### Tier 2: Important for Prototype Quality
 4. **Spatial audio foundation** — PROMOTED from Tier 3. Stone/water acoustics, spatialized actor voice, ambient soundscape. The Meta XR Audio SDK supports all of this natively. Sound is what makes the cave real.
 5. **Set piece tracking via QR codes or other trackables** — Place set pieces anywhere, world adapts. QR tracking confirmed available in MRUK v85 with 6DOF pose and payload data.
-6. **"Don't look back" detection** — Head rotation threshold detection
-7. **Bridge wobble tracking** — Arduino accelerometer on physical beam, data to Unity via BLE
+6. **"Don't look back" detection** — Head rotation threshold detection.
+7. **Bridge wobble tracking** — Arduino accelerometer on physical beam, data to Unity via BLE.
 
 ### Tier 3: Polish Phase
 8. **Passthrough color linked to torch proximity**
@@ -261,22 +282,17 @@ Point Light (Position: 0,2,0)
 10. **Environment visual polish**
 11. **Advanced sound design** (environmental variation, dynamic acoustics per location)
 
-### IMPORTANT NOTE ON FEASIBILITY
-Multiple technical challenges were initially assessed as difficult or impossible based on web research of older SDK versions. The v85 SDK documentation has now been reviewed by the Co-Creative Director. All key capabilities have been confirmed against the actual documentation in the project knowledge base. See Section 18 for the SDK capability summary.
-
 ---
 
-## 8. Research Areas — Documentation Required
+## 8. Research Areas — Documentation Status
 
-The following areas require reading the official Meta v85 documentation before making technical decisions. PDFs have been uploaded to the project knowledge base.
+### Reviewed by Co-Creative Director (April 4, 2026)
+The Co-Creative Director has read all uploaded SDK documentation at a high level. Key areas reviewed: Spatial Audio (spatialization, room acoustics, ambisonics, ray tracing), Passthrough (compositing, masking, occlusions, selective passthrough shader), MRUK (trackables, QR codes, scene data, EffectMesh, destructible mesh), Voice SDK, Microgestures, Eye Tracking, Hand/Body Tracking, Interaction SDK, AI Building Blocks (agents, STT, TTS, LLM, object detection), and performance optimization guides.
 
-### Priority 1 — REVIEWED by Co-Creative Director (April 4, 2026)
-The Co-Creative Director has read all uploaded SDK documentation at a high level. Detailed implementation review is the Developer's responsibility before writing code. Key documentation reviewed includes: Spatial Audio (spatialization, room acoustics, ambisonics, ray tracing), Passthrough (compositing, masking, occlusions, selective passthrough shader), MRUK (trackables, QR codes, scene data, EffectMesh, destructible mesh), Voice SDK, Microgestures, Eye Tracking, Hand/Body Tracking, Interaction SDK, AI Building Blocks (agents, STT, TTS, LLM, object detection), and performance optimization guides.
-
-### Still Needs Detailed Developer Review Before Implementation
+### Needs Detailed Developer Review Before Implementation
 | Topic | Notes |
 |-------|-------|
-| Movement SDK Character Retargeter | Exact setup steps for capsule-person body occlusion |
+| Movement SDK Character Retargeter | For refined body occlusion after capsule-person works |
 | Meta XR Audio SDK setup in Unity | Spatializer plugin, mixer configuration, room acoustics component |
 | Selective Passthrough shader | Exact material/shader path in Core SDK, integration with custom geometry |
 | QR Code Tracking in MRUK | Tracker configuration, event subscription, payload handling |
@@ -309,10 +325,12 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 | Co-Creative Director role for main conversation | Holds full picture, makes design/architecture decisions | April 5 |
 | Depth API disabled for Orpheus | Occludes entire room, not just body. Confirmed by Researcher. | April 5 |
 | AI Building Blocks not used for body occlusion | No image segmentation in v85; inference engine lacks hardware acceleration on Quest | April 5 |
-| Body occlusion via Movement SDK + depth shader | Capsule-person first pass, Character Retargeter for refinement | April 4-5 |
+| Body occlusion via capsule primitives + depth shader | Direct OVRPlugin.GetBodyState() joint access, 12 capsules + head sphere | April 4-5 |
 | Spatial audio promoted to prototype milestone | Sound is what makes the cave real; SDK supports it natively | April 4 |
 | Underworld tone: wet stone, water as dominant sound | Aligned with narrative and atmospheric goals | April 4 |
 | Player is Orpheus (POV) | The experience is told from Orpheus's perspective, not Eurydice's | April 4 |
+| State of Project on GitHub | Single source of truth, editable via Claude Code, fetchable by all conversations | April 4 |
+| Document governance: facts open, decisions restricted | Any role reports facts; only Co-Creative Director authors design decisions | April 4 |
 
 ---
 
@@ -331,9 +349,10 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 ## 12. Rules for Future Sessions
 
 ### Before Starting Work
-1. Read the State of Project document (automatically available via project knowledge base)
-2. State what you want to work on
-3. If any SDK versions have changed, update this document immediately
+1. Fetch the State of Project from GitHub and read it
+2. Check Inter-Team Messages for messages addressed to your role
+3. State what you want to work on
+4. If any SDK versions have changed, update this document immediately
 
 ### Before Giving Instructions
 1. Reference the SDK documentation PDFs in the knowledge base for the specific feature
@@ -341,7 +360,7 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 3. Specify exact Unity paths: which object → which component → which field → what value
 
 ### After Completing Work
-1. Update this document with any changes
+1. Update this document with any changes (respecting governance rules)
 2. Note any new scripts, materials, or objects created
 3. Update "What Works" and "What Doesn't Work Yet" sections
 
@@ -369,7 +388,8 @@ Assets/
 │   ├── RequestSpatialPermission.cs
 │   ├── RequestBodyTracking.cs
 │   ├── BodyTrackingDebug.cs
-│   └── PassthroughStyling.cs (REMOVED from scene, file may still exist)
+│   ├── PassthroughStyling.cs (REMOVED from scene, file may still exist)
+│   └── CapsuleBodyOcclusion.cs (WRITTEN — not yet added to project)
 ├── Materials/
 │   ├── CaveMaterial
 │   ├── FloorMaterial
@@ -381,43 +401,47 @@ Assets/
 
 ## 14. Next Session Plan
 
-### Currently In Progress (April 4, 2026)
-Developer is working on:
-1. Restructuring the Unity project into an enclosing folder
-2. Installing Claude Code + MCP Unity bridge
-3. Body occlusion — capsule person first pass
+### Immediate Next Steps
+1. Add CapsuleBodyOcclusion.cs to Assets/Scripts/
+2. Create `BodyOcclusion` GameObject at scene root
+3. Add `CapsuleBodyOcclusion` component
+4. Wire references: `OVRCameraRig` → Camera Rig field, `HandOcclusionMaterial` → Occlusion Material field
+5. Build with `debugVisible=true` and `TestMaterial` → Debug Material — verify capsule tracking
+6. Build with `debugVisible=false` — verify passthrough body silhouette
+7. Tune capsule sizing if needed
+8. Update this document with test results
 
-### After Pipeline Is Working
-4. Build and test body occlusion — confirm body visibility in cave
-5. Begin spatial audio setup — Meta XR Audio spatializer plugin, room acoustics component
-6. Prototype portal transition using Selective Passthrough shader
+### After Body Occlusion Works
+9. Begin spatial audio setup — Meta XR Audio spatializer plugin, room acoustics component
+10. Prototype portal transition using Selective Passthrough shader
+11. Begin torch tracking research/implementation
 
 ---
 
 ## 15. Infrastructure TODO
 - [x] Upload State of Project document to Claude Project knowledge base
-- [x] Paste Project Instructions v2 into Claude Project settings
-- [x] Save and upload Priority 1 SDK documentation PDFs
-- [x] Save and upload Priority 2 SDK documentation PDFs
-- [x] Save and upload additional SDK documentation PDFs (Joshua uploaded extensive collection)
+- [x] Paste Project Instructions into Claude Project settings
+- [x] Save and upload SDK documentation PDFs (extensive collection uploaded)
 - [x] Create Developer conversation
 - [x] Create Researcher conversation
 - [x] Open new Co-Creative Director conversation (opened April 4, 2026)
-- [ ] Install Node.js if needed (nodejs.org) — Developer working on this
-- [ ] Install Claude Code on Mac — Developer working on this
-- [ ] Set up MCP Unity bridge in Unity project — Developer working on this
+- [x] Install Python 3.13 via Homebrew (MCP server requires Python, not Node)
+- [x] Install Claude Code on Mac (native installer)
+- [x] Set up MCP Unity bridge in Unity project (CoplayDev unity-mcp, beta branch)
+- [x] Create GitHub docs repo for State of Project (https://github.com/JoshuaCrisp/orpheus-docs)
+- [ ] Set Git identity (`git config --global user.name` / `user.email`)
 - [ ] Set up wireless ADB for cable-free Quest deployment
-- [ ] Restructure Unity project into enclosing folder — Developer working on this
+- [ ] Update Project Instructions to include role definitions and GitHub URL (v3 drafted)
 
 ---
 
 ## 16. Inter-Team Messages
 
 ### For: Co-Creative Director
-(No new messages)
+(No new messages — Developer session report from April 4 has been read and integrated into this document)
 
 ### For: Developer
-(No new messages — Developer has already received implementation instructions for body occlusion via the Researcher message from April 5, and a detailed session prompt from the Co-Creative Director on April 4)
+(No new messages)
 
 ### For: Researcher
 (No new messages)
@@ -431,11 +455,12 @@ Developer is working on:
 
 (Messages moved here after being read and addressed by the recipient)
 
-- [FROM Co-Creative Director, April 5] Priority research needed: Can the Depth API be configured to occlude ONLY the player's body without showing the rest of the room? → **RESOLVED by Researcher April 5. Answer: No. Depth API disabled for Orpheus. Read and acknowledged by Co-Creative Director April 4.**
-- [FROM Co-Creative Director, April 5] Secondary research: What do the AI Building Blocks (Object Detection, Image Segmentation) actually do? → **RESOLVED by Researcher April 5. No image segmentation in v85. AI Building Blocks not used for body occlusion. Read and acknowledged by Co-Creative Director April 4.**
-- [FROM Researcher, April 5] RE: Depth API body-only occlusion — **Read and acknowledged by Co-Creative Director April 4. Decision: Depth API stays disabled. Body occlusion proceeds via Movement SDK + depth-only shader.**
-- [FROM Researcher, April 5] RE: AI Building Blocks capabilities — **Read and acknowledged by Co-Creative Director April 4. Decision: AI Building Blocks reserved for future use (voice commands, object detection for set pieces). Not used for body occlusion.**
-- [FROM Researcher, April 5] Body occlusion approach confirmed for Developer — **Read by Developer (pending confirmation). Implementation instructions delivered.**
+- [FROM Co-Creative Director, April 5] Priority research: Depth API for body-only occlusion? → **RESOLVED by Researcher April 5. Answer: No. Read and integrated by Co-Creative Director April 4.**
+- [FROM Co-Creative Director, April 5] Secondary research: AI Building Blocks capabilities? → **RESOLVED by Researcher April 5. No image segmentation in v85. Read and integrated by Co-Creative Director April 4.**
+- [FROM Researcher, April 5] Depth API findings for Co-Creative Director → **Read and acknowledged April 4. Decision: Depth API stays disabled.**
+- [FROM Researcher, April 5] AI Building Blocks findings for Co-Creative Director → **Read and acknowledged April 4. Decision: AI Building Blocks reserved for future use.**
+- [FROM Researcher, April 5] Body occlusion approach confirmed for Developer → **Read by Developer April 4. Script written using confirmed approach.**
+- [FROM Developer, April 4] Infrastructure complete: Claude Code + MCP bridge connected, GitHub docs repo created, CapsuleBodyOcclusion.cs written and ready for deployment. → **Read and integrated by Co-Creative Director April 4.**
 
 ---
 
