@@ -209,6 +209,10 @@ TestDrip (Position: 2,1.5,3)
 ├── AudioSource (Spatial Blend: 1.0, Spatialize: true, Output: Master SpatializerMixer)
 ├── ProceduralTestTone (Script)
 └── MetaXRAudioSource (Script)
+
+PortalTestObj (Position: 0,0,0)
+└── PortalQuad (Quad, Position: 0,1.5,3, Rotation: 0,180,0, Scale: 2,2.5,1)
+    └── MeshRenderer (Material: SelectivePassthroughPortal)
 ```
 
 ### OVR Manager Settings (on OVRCameraRig)
@@ -227,6 +231,7 @@ TestDrip (Position: 2,1.5,3)
 | FloorMaterial | URP/Lit | ~(50,45,40) dark warm | Smoothness 0.05 |
 | TestMaterial | URP/Lit | (150,150,150) gray | For debugging visibility |
 | HandOcclusionMaterial | Custom/DepthOnlyHand | N/A (invisible) | Writes depth only, renders no color. Cull Off (both faces). |
+| SelectivePassthroughPortal | Oculus/SelectivePassthrough | N/A (transparent) | Blend Zero SrcAlpha — punches hole in VR to reveal passthrough underlay. Copied from Core SDK Editor folder. |
 
 ### Custom Scripts
 | Script | Location | Purpose | Status |
@@ -240,6 +245,7 @@ TestDrip (Position: 2,1.5,3)
 | CapsuleBodyOcclusion.cs | Assets/Scripts | Reads OVRPlugin.GetBodyState4() with Full Body joint set (84 joints), creates 12 capsule segments + 5 spheres (head, elbows, shoulders), positions between joint pairs, applies depth-only shader for body occlusion passthrough | Active — deployed and tested April 5 |
 | SetRefreshRate.cs | Assets/Scripts | Sets Quest 3 display refresh rate to 120Hz on Start | Active — added April 5 |
 | ProceduralTestTone.cs | Assets/Scripts | Procedural mono water drip tone for spatial audio testing | Active — added April 5 |
+| SelectivePassthrough.shader | Assets/Shaders | Oculus/SelectivePassthrough — Blend Zero SrcAlpha, ZWrite Off, Cull Off. Punches holes in VR rendering to reveal passthrough. Copied from Meta XR Core SDK Editor/BuildingBlocks path into Assets for build inclusion. | Active — tested April 5 |
 
 ### Fog Settings
 - Enabled via Window → Rendering → Lighting → Environment
@@ -293,6 +299,7 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 - **Claude Code ↔ Unity pipeline**: Claude Code connected to Unity via CoplayDev MCP bridge. Can create/modify GameObjects, components, and scripts from Terminal or VS Code. Tested successfully April 4 (created and deleted a test cube). Used April 5 to set up BodyOcclusion GameObject and wire all component references.
 - **GitHub docs repo**: State of Project document hosted at https://github.com/JoshuaCrisp/orpheus-docs — editable via Claude Code, fetchable by all conversations.
 - **Spatial audio foundation**: Meta XR Audio spatializer plugin enabled, Audio Mixer with MetaXRAudioReflection effect, Room Acoustics Properties (15x8x15 stone, clutter 0.2, locked to listener), spatialized test drip source at (2,1.5,3). HRTF spatialization, distance attenuation, and room reverb all confirmed working on Quest 3 — April 5.
+- **Selective Passthrough portal (proof of concept)**: A quad with the Selective Passthrough shader (Oculus/SelectivePassthrough, from Meta XR Core SDK) successfully punches a hole in the VR cave to reveal real-world passthrough. Sharp edges, no fog interference, body occlusion unaffected, works from both sides (Cull Off added). Shader and material copied from SDK Editor folder into Assets/Shaders and Assets/Materials for device build inclusion. Tested and confirmed working on Quest 3 — April 5.
 
 ---
 
@@ -303,6 +310,11 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 - **Shoulder cutoff**: Head sphere may intersect shoulder sphere, creating visual cutoff when looking down at own shoulders. Also expected to resolve with proper mesh.
 - **Leg tracking responsiveness**: Legs use "Generative Legs" (predicted from upper body, not directly tracked). Inherently less responsive than arm/torso tracking. This is a Quest 3 hardware limitation, not fixable in software.
 - **Body tracking update rate**: Body data arrives at ~36fps regardless of display refresh rate (120Hz). Interpolation/smoothing could make transitions appear smoother but would not reduce latency.
+
+### Controller/Hand Tracking Mode Switch
+- Switching to controllers (e.g., to interact with system menus) disables hand and body tracking for the remainder of the session
+- Tracking does not re-engage until the app is restarted and controllers are set aside before launch
+- Not blocking for prototype (players will never use controllers) but worth noting
 
 ### Hand Occlusion Border/Halo
 - Thin border of real world visible around hand edges
@@ -321,7 +333,7 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 ### Tier 1: Must Solve for Prototype
 1. ~~**Full body occlusion**~~ — **COMPLETE (first pass).** Capsule person deployed and tested. Player sees real body as passthrough silhouette. Polish issues deferred to Tier 3.
 2. **Torch tracking** — Track a physical prop while player carries it.
-3. **Passthrough-to-VR transition** — Gradual blend from real world into underworld. Selective Passthrough shader is a strong candidate (see Section 18). Narrative justification for the transition is an open question.
+3. **Passthrough-to-VR transition** — Gradual blend from real world into underworld. Selective Passthrough shader CONFIRMED WORKING (proof of concept April 5). Next step: architectural decision on how to invert the effect — player needs to start in passthrough and see the cave through a portal, not the reverse. Requires Co-Creative Director direction.
 
 ### Tier 2: Important for Prototype Quality
 4. ~~**Spatial audio foundation**~~ — **COMPLETE.** Spatializer plugin, Audio Mixer, room acoustics, test source all working. Further audio work (ambient soundscape, actor voice, additional sources) continues as part of ongoing development.
@@ -346,7 +358,7 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 | Topic | Notes |
 |-------|-------|
 | Meta XR Audio SDK setup in Unity | **DONE** — Spatializer plugin, mixer, room acoustics, spatialized source all set up and tested April 5 |
-| Selective Passthrough shader | Exact material/shader path in Core SDK, integration with custom geometry |
+| Selective Passthrough shader | **DONE** — Shader and material located in Core SDK Editor/BuildingBlocks path, copied to Assets for build inclusion. Shader is Oculus/SelectivePassthrough, uses Blend Zero SrcAlpha. Cull Off added. Proof of concept tested and working April 5. |
 | QR Code Tracking in MRUK | Tracker configuration, event subscription, payload handling |
 | Movement SDK Character Retargeter | For refined body occlusion (Tier 3) |
 
@@ -449,11 +461,14 @@ Assets/
 │   ├── CapsuleBodyOcclusion.cs (deployed and tested April 5)
 │   ├── SetRefreshRate.cs (added April 5)
 │   └── ProceduralTestTone.cs (added April 5)
+├── Shaders/
+│   └── SelectivePassthrough.shader (Oculus/SelectivePassthrough — Cull Off, copied from Core SDK April 5)
 ├── Materials/
 │   ├── CaveMaterial
 │   ├── FloorMaterial
 │   ├── TestMaterial
-│   └── HandOcclusionMaterial
+│   ├── HandOcclusionMaterial
+│   └── SelectivePassthroughPortal.mat (Selective Passthrough material, April 5)
 ```
 
 ---
@@ -493,10 +508,10 @@ Assets/
 ## 16. Inter-Team Messages
 
 ### For: Co-Creative Director
-(No new messages)
+- [FROM Developer, April 5] Portal passthrough proof of concept COMPLETE. Selective Passthrough shader (Oculus/SelectivePassthrough) from Meta XR Core SDK confirmed working on Quest 3. Shader uses Blend Zero SrcAlpha to punch holes in VR rendering, revealing passthrough underlay. Both shader and material were in an Editor-only SDK path and had to be copied into Assets/ for device builds. Cull Off added to shader for double-sided visibility. Test results: passthrough shows cleanly through a door-sized quad in the VR cave — sharp edges, no fog interference, body occlusion unaffected. KEY DESIGN FINDING: The shader erases VR to reveal passthrough. For Orpheus, we need the inverse — the player starts in passthrough and sees the cave THROUGH a portal. This likely requires a large Selective Passthrough shell surrounding the player (sphere, box, or quads covering all directions), with a door-shaped opening cut out. The cave renders everywhere but is hidden by the shell; only the opening reveals the cave. Walking through the opening puts the shell behind the player, leaving them fully in the cave. This is an architectural/creative decision requiring Co-Creative Director direction. Files created: Assets/Shaders/SelectivePassthrough.shader, Assets/Materials/SelectivePassthroughPortal.mat. Scene objects: PortalTestObj/PortalQuad in Underworld scene (test quad, can be repurposed or removed). Minor finding: switching to controllers disables hand/body tracking for the rest of the session — requires app restart.
 
 ### For: Developer
-- [FROM Co-Creative Director, April 5] Spatial audio foundation accepted. Next priority: passthrough-to-VR transition prototype. This is the remaining Tier 1 challenge that doesn't require physical props. Goal: the player walks through a real doorway and the real world dissolves into the virtual cave. The transition must be gradual — no hard cut (Design Principle #1). Technical approach to investigate: the Selective Passthrough shader (built into Meta XR Core SDK) applied to a door-shaped mesh. Read the following documentation PDFs in the knowledge base before writing code: Compositing_and_Masking, Passthrough_Occlusions_in_Unity, Mixed_Reality_Utility_Kit__Manipulate_Scene_Visuals, Get_Started_with_Passthrough. Start simple: place a quad or plane with the Selective Passthrough material in the cave scene and confirm that looking through it shows the real world while the rest shows the cave. That proves the mechanism. Do NOT use the Depth API or EnvironmentDepthManager. Do NOT use MRUK Scene Setup for the first test — control the portal geometry manually. Report findings immediately, especially if the Selective Passthrough shader doesn't exist at the expected path in v85.
+(No new messages)
 
 ### For: Researcher
 (No new messages)
@@ -519,6 +534,7 @@ Assets/
 - [FROM Developer, April 5] Body occlusion first pass COMPLETE. Capsule person deployed, tested, and working. → **Read and acknowledged by Co-Creative Director April 5. Body occlusion first pass accepted. Polish issues deferred to Tier 3. Body occlusion is no longer a blocker.**
 - [FROM Co-Creative Director, April 5] Spatial audio directive for Developer → **Read and completed by Developer April 5. Spatializer, mixer, room acoustics, and test source all deployed and confirmed working.**
 - [FROM Developer, April 5] Spatial audio foundation COMPLETE report → **Read and acknowledged by Co-Creative Director April 5. Spatial audio foundation accepted.**
+- [FROM Co-Creative Director, April 5] Portal transition directive for Developer → **Read by Developer April 5. Proof of concept completed: Selective Passthrough shader located, copied, tested, confirmed working. Findings and architectural question reported back to Co-Creative Director.**
 
 ---
 
