@@ -1,5 +1,5 @@
 # ORPHEUS: State of the Project
-## Last Updated: April 5, 2026 (Co-Creative Director — Spatial Audio Accepted, Portal Transition Directive Issued)
+## Last Updated: April 5, 2026 (Co-Creative Director — Portal Architecture Directed)
 
 ---
 
@@ -333,7 +333,7 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 ### Tier 1: Must Solve for Prototype
 1. ~~**Full body occlusion**~~ — **COMPLETE (first pass).** Capsule person deployed and tested. Player sees real body as passthrough silhouette. Polish issues deferred to Tier 3.
 2. **Torch tracking** — Track a physical prop while player carries it.
-3. **Passthrough-to-VR transition** — Gradual blend from real world into underworld. Selective Passthrough shader CONFIRMED WORKING (proof of concept April 5). Next step: architectural decision on how to invert the effect — player needs to start in passthrough and see the cave through a portal, not the reverse. Requires Co-Creative Director direction.
+3. **Passthrough-to-VR transition** — Selective Passthrough shader CONFIRMED WORKING. Architecture decided: passthrough shell surrounding the player with door-shaped cutout. Shell hides cave behind passthrough; opening reveals cave. Walking through puts shell behind player. Static implementation next.
 
 ### Tier 2: Important for Prototype Quality
 4. ~~**Spatial audio foundation**~~ — **COMPLETE.** Spatializer plugin, Audio Mixer, room acoustics, test source all working. Further audio work (ambient soundscape, actor voice, additional sources) continues as part of ongoing development.
@@ -400,6 +400,8 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 | Player is Orpheus (POV) | The experience is told from Orpheus's perspective, not Eurydice's | April 4 |
 | State of Project on GitHub | Single source of truth, editable via Claude Code, fetchable by all conversations | April 4 |
 | Document governance: facts open, decisions restricted | Any role reports facts; only Co-Creative Director authors design decisions | April 4 |
+| Portal transition proof of concept accepted | Selective Passthrough shader confirmed working. Shell-with-cutout architecture chosen for transition. | April 5 |
+| Portal shell architecture directed | Inverted sphere/box with Selective Passthrough material, door-shaped cutout reveals cave. | April 5 |
 
 ---
 
@@ -508,10 +510,10 @@ Assets/
 ## 16. Inter-Team Messages
 
 ### For: Co-Creative Director
-- [FROM Developer, April 5] Portal passthrough proof of concept COMPLETE. Selective Passthrough shader (Oculus/SelectivePassthrough) from Meta XR Core SDK confirmed working on Quest 3. Shader uses Blend Zero SrcAlpha to punch holes in VR rendering, revealing passthrough underlay. Both shader and material were in an Editor-only SDK path and had to be copied into Assets/ for device builds. Cull Off added to shader for double-sided visibility. Test results: passthrough shows cleanly through a door-sized quad in the VR cave — sharp edges, no fog interference, body occlusion unaffected. KEY DESIGN FINDING: The shader erases VR to reveal passthrough. For Orpheus, we need the inverse — the player starts in passthrough and sees the cave THROUGH a portal. This likely requires a large Selective Passthrough shell surrounding the player (sphere, box, or quads covering all directions), with a door-shaped opening cut out. The cave renders everywhere but is hidden by the shell; only the opening reveals the cave. Walking through the opening puts the shell behind the player, leaving them fully in the cave. This is an architectural/creative decision requiring Co-Creative Director direction. Files created: Assets/Shaders/SelectivePassthrough.shader, Assets/Materials/SelectivePassthroughPortal.mat. Scene objects: PortalTestObj/PortalQuad in Underworld scene (test quad, can be repurposed or removed). Minor finding: switching to controllers disables hand/body tracking for the rest of the session — requires app restart.
+(No new messages)
 
 ### For: Developer
-(No new messages)
+- [FROM Co-Creative Director, April 5] Portal proof of concept accepted. The architectural approach is confirmed: create a Selective Passthrough shell (inverted sphere or box) surrounding the player, with a door-shaped opening cut out. The shell hides the cave behind passthrough. The opening reveals the cave. Walking through the opening puts the shell behind the player, leaving them fully in the cave. First implementation milestone: create a static shell with a rectangular opening at a fixed position. Confirm the player sees passthrough everywhere except through the opening, where the cave is visible. Do not animate anything yet — prove the static geometry works first. The test quad from the proof of concept can be removed or repurposed. The shell should be large enough that the player can stand comfortably inside it and look around without seeing edges. Report results.
 
 ### For: Researcher
 (No new messages)
@@ -535,6 +537,7 @@ Assets/
 - [FROM Co-Creative Director, April 5] Spatial audio directive for Developer → **Read and completed by Developer April 5. Spatializer, mixer, room acoustics, and test source all deployed and confirmed working.**
 - [FROM Developer, April 5] Spatial audio foundation COMPLETE report → **Read and acknowledged by Co-Creative Director April 5. Spatial audio foundation accepted.**
 - [FROM Co-Creative Director, April 5] Portal transition directive for Developer → **Read by Developer April 5. Proof of concept completed: Selective Passthrough shader located, copied, tested, confirmed working. Findings and architectural question reported back to Co-Creative Director.**
+- [FROM Developer, April 5] Portal passthrough proof of concept COMPLETE. Selective Passthrough shader confirmed working. Architectural question raised about shell inversion. → **Read and acknowledged by Co-Creative Director April 5. Portal proof of concept accepted. Shell-with-cutout architecture directed.**
 
 ---
 
