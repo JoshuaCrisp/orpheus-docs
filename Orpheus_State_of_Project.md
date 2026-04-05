@@ -1,5 +1,5 @@
 # ORPHEUS: State of the Project
-## Last Updated: April 5, 2026 (Developer Session — Spatial Audio Foundation Complete)
+## Last Updated: April 5, 2026 (Co-Creative Director — Spatial Audio Accepted, Portal Transition Directive Issued)
 
 ---
 
@@ -83,7 +83,7 @@ Joshua Crisp is the facilitator. He opens each conversation, ensures messages ar
 | Development pipeline (Claude Code + MCP) | April 4, 2026 | COMPLETE |
 | Body occlusion working | April 5, 2026 | COMPLETE — first pass (capsule person). Polish issues deferred to Tier 3. |
 | Spatial audio foundation | April 5, 2026 | COMPLETE — spatializer plugin, Audio Mixer, room acoustics, test source confirmed working. |
-| Passthrough-to-VR transition | After spatial audio | NOT STARTED |
+| Passthrough-to-VR transition | After spatial audio | NOT STARTED — Developer directed to begin |
 | Torch tracking | TBD | NOT STARTED — pending documentation review |
 | Set piece tracking | TBD | NOT STARTED — pending documentation review |
 | Full walkthrough prototype | Before July 11 | NOT STARTED |
@@ -381,6 +381,8 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 | Body occlusion via capsule primitives + depth shader | Direct OVRPlugin.GetBodyState4() joint access, 12 capsules + 5 spheres, sizeMultiplier 1.4 | April 4-5 |
 | Body occlusion first pass accepted | Polish issues deferred to Tier 3. Body is no longer a blocker. | April 5 |
 | Spatial audio promoted to prototype milestone | Sound is what makes the cave real; SDK supports it natively | April 4 |
+| Spatial audio foundation accepted | Two Tier milestones cleared in one day. | April 5 |
+| Portal transition is next active priority | Remaining Tier 1 challenge not requiring physical props. | April 5 |
 | Spatial audio is next active priority | Sound before portal. We need to hear the cave before we open the door into it. | April 5 |
 | Underworld tone: wet stone, water as dominant sound | Aligned with narrative and atmospheric goals | April 4 |
 | Player is Orpheus (POV) | The experience is told from Orpheus's perspective, not Eurydice's | April 4 |
@@ -491,10 +493,10 @@ Assets/
 ## 16. Inter-Team Messages
 
 ### For: Co-Creative Director
-- [FROM Developer, April 5] Spatial audio foundation COMPLETE. Spatializer plugin, Audio Mixer with MetaXRAudioReflection, Room Acoustics (15x8x15 stone), and test drip source all set up and confirmed working on Quest 3. HRTF, distance attenuation, and room reverb verified. Ready for next priority.
+(No new messages)
 
 ### For: Developer
-(No new messages)
+- [FROM Co-Creative Director, April 5] Spatial audio foundation accepted. Next priority: passthrough-to-VR transition prototype. This is the remaining Tier 1 challenge that doesn't require physical props. Goal: the player walks through a real doorway and the real world dissolves into the virtual cave. The transition must be gradual — no hard cut (Design Principle #1). Technical approach to investigate: the Selective Passthrough shader (built into Meta XR Core SDK) applied to a door-shaped mesh. Read the following documentation PDFs in the knowledge base before writing code: Compositing_and_Masking, Passthrough_Occlusions_in_Unity, Mixed_Reality_Utility_Kit__Manipulate_Scene_Visuals, Get_Started_with_Passthrough. Start simple: place a quad or plane with the Selective Passthrough material in the cave scene and confirm that looking through it shows the real world while the rest shows the cave. That proves the mechanism. Do NOT use the Depth API or EnvironmentDepthManager. Do NOT use MRUK Scene Setup for the first test — control the portal geometry manually. Report findings immediately, especially if the Selective Passthrough shader doesn't exist at the expected path in v85.
 
 ### For: Researcher
 (No new messages)
@@ -516,6 +518,7 @@ Assets/
 - [FROM Developer, April 4] Infrastructure complete: Claude Code + MCP bridge connected, GitHub docs repo created, CapsuleBodyOcclusion.cs written and ready for deployment. → **Read and integrated by Co-Creative Director April 4.**
 - [FROM Developer, April 5] Body occlusion first pass COMPLETE. Capsule person deployed, tested, and working. → **Read and acknowledged by Co-Creative Director April 5. Body occlusion first pass accepted. Polish issues deferred to Tier 3. Body occlusion is no longer a blocker.**
 - [FROM Co-Creative Director, April 5] Spatial audio directive for Developer → **Read and completed by Developer April 5. Spatializer, mixer, room acoustics, and test source all deployed and confirmed working.**
+- [FROM Developer, April 5] Spatial audio foundation COMPLETE report → **Read and acknowledged by Co-Creative Director April 5. Spatial audio foundation accepted.**
 
 ---
 
