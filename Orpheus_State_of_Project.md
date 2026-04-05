@@ -1,5 +1,5 @@
 # ORPHEUS: State of the Project
-## Last Updated: April 4, 2026 (Co-Creative Director — SDK Review, Creative Direction, Developer Session Integration)
+## Last Updated: April 5, 2026 (Developer Session — Body Occlusion Deployed and Tested)
 
 ---
 
@@ -81,14 +81,14 @@ Joshua Crisp is the facilitator. He opens each conversation, ensures messages ar
 |-----------|------------|--------|
 | **PROTOTYPE DELIVERY** | **July 11, 2026** | **HARD DEADLINE** |
 | Development pipeline (Claude Code + MCP) | April 4, 2026 | COMPLETE |
-| Body occlusion working | ASAP — blocks all other work | SCRIPT WRITTEN — awaiting deployment and test |
+| Body occlusion working | ASAP — blocks all other work | COMPLETE — first pass (capsule person). Polish issues logged in Section 6. |
 | Passthrough-to-VR transition | TBD | NOT STARTED |
 | Spatial audio foundation | TBD | NOT STARTED — promoted to prototype milestone |
 | Torch tracking | TBD | NOT STARTED — pending documentation review |
 | Set piece tracking | TBD | NOT STARTED — pending documentation review |
 | Full walkthrough prototype | Before July 11 | NOT STARTED |
 
-**Weeks remaining as of April 4, 2026: approximately 14 weeks.**
+**Weeks remaining as of April 5, 2026: approximately 14 weeks.**
 
 ---
 
@@ -162,7 +162,8 @@ OVRCameraRig (Position: 0,0,0)
 ├── OVR Body (Script) — Provided Skeleton Type: Full Body
 ├── BodyTrackingDebug (Script)
 ├── RequestBodyTracking (Script)
-└── RequestSpatialPermission (Script)
+├── RequestSpatialPermission (Script)
+└── SetRefreshRate (Script) — sets display to 120Hz on Start
 
 PassthroughLayer (GameObject at scene root)
 ├── OVR Passthrough Layer (Placement: Underlay)
@@ -170,6 +171,14 @@ PassthroughLayer (GameObject at scene root)
 
 DepthManager (GameObject at scene root)
 └── Environment Depth Manager — DISABLED (caused whole room to show through)
+
+BodyOcclusion (Position: 0,0,0)
+└── CapsuleBodyOcclusion (Script)
+    ├── Camera Rig: OVRCameraRig
+    ├── Occlusion Material: HandOcclusionMaterial
+    ├── Debug Visible: false
+    ├── Size Multiplier: 1.4
+    └── Creates at runtime: 12 capsule segments + 5 spheres (head, elbows, shoulders)
 
 CaveWalls (Inverted Sphere, Scale: 15,8,15, Material: CaveMaterial)
 ├── InvertMesh (Script)
@@ -203,18 +212,19 @@ Point Light (Position: 0,2,0)
 | CaveMaterial | URP/Lit | ~(30,25,25) near-black | Smoothness 0.1 |
 | FloorMaterial | URP/Lit | ~(50,45,40) dark warm | Smoothness 0.05 |
 | TestMaterial | URP/Lit | (150,150,150) gray | For debugging visibility |
-| HandOcclusionMaterial | Custom/DepthOnlyHand | N/A (invisible) | Writes depth only, renders no color |
+| HandOcclusionMaterial | Custom/DepthOnlyHand | N/A (invisible) | Writes depth only, renders no color. Cull Off (both faces). |
 
 ### Custom Scripts
 | Script | Location | Purpose | Status |
 |--------|----------|---------|--------|
 | InvertMesh.cs | Assets/Scripts | Flips sphere normals so cave renders inside-out | Active |
-| DepthOnlyHand (Shader) | Assets/Scripts | ZWrite On, ColorMask 0 — invisible depth writer | Active |
+| DepthOnlyHand.shader | Assets/Scripts | ZWrite On, ColorMask 0, Cull Off — invisible depth writer for both faces | Active — Cull Off added April 5 |
 | RequestSpatialPermission.cs | Assets/Scripts | Requests com.oculus.permission.USE_SCENE on startup | Active |
 | RequestBodyTracking.cs | Assets/Scripts | Requests com.oculus.permission.BODY_TRACKING on startup | Active |
 | BodyTrackingDebug.cs | Assets/Scripts | Logs body tracking status to console (debug only) | Active |
 | PassthroughStyling.cs | Assets/Scripts | REMOVED from scene — replaced by Inspector Color Adjustment sliders | Inactive |
-| CapsuleBodyOcclusion.cs | Assets/Scripts | Reads OVRPlugin.GetBodyState(), creates 12 capsule segments + head sphere, applies depth-only shader | WRITTEN — not yet added to project |
+| CapsuleBodyOcclusion.cs | Assets/Scripts | Reads OVRPlugin.GetBodyState4() with Full Body joint set (84 joints), creates 12 capsule segments + 5 spheres (head, elbows, shoulders), positions between joint pairs, applies depth-only shader for body occlusion passthrough | Active — deployed and tested April 5 |
+| SetRefreshRate.cs | Assets/Scripts | Sets Quest 3 display refresh rate to 120Hz on Start | Active — added April 5 |
 
 ### Fog Settings
 - Enabled via Window → Rendering → Lighting → Environment
@@ -222,6 +232,33 @@ Point Light (Position: 0,2,0)
 - Mode: Linear
 - Start: 0.5
 - End: 5
+
+### OVRPlugin Body Joint Indices (verified against v85 SDK)
+These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
+| Joint | Index |
+|-------|-------|
+| Body_LeftShoulder | 8 |
+| Body_LeftArmUpper | 10 |
+| Body_LeftArmLower | 11 |
+| Body_LeftHandWrist | 19 |
+| Body_RightShoulder | 13 |
+| Body_RightArmUpper | 15 |
+| Body_RightArmLower | 16 |
+| Body_RightHandWrist | 45 |
+| Body_LeftUpperLeg | 70 |
+| Body_LeftLowerLeg | 71 |
+| Body_LeftFootAnkle | 73 |
+| Body_RightUpperLeg | 77 |
+| Body_RightLowerLeg | 78 |
+| Body_RightFootAnkle | 80 |
+
+### CapsuleBodyOcclusion Technical Details
+- API: `OVRPlugin.GetBodyState4(Step.Render, BodyJointSet.FullBody, ref bodyState)` — returns 84 joints including generative legs
+- Coordinate conversion: OVRPlugin right-hand space → Unity left-hand space (Z negated)
+- Validity check: `bodyState.Confidence > 0` and `JointLocations != null`
+- Joint validity: `LocationFlags & 0x3 != 0`
+- Capsule sizing: base radius per segment × global sizeMultiplier (currently 1.4)
+- Debug mode: `debugVisible` flag swaps depth-only material for TestMaterial (gray visible capsules)
 
 ---
 
@@ -236,20 +273,20 @@ Point Light (Position: 0,2,0)
 - **Floor tracking**: Floor level is correct (Tracking Origin: Floor Level)
 - **Body tracking data**: OVR Body running with FullBody skeleton at ~36fps (confirmed via adb logcat)
 - **Build pipeline**: USB build and run to Quest 3 works reliably
-- **Claude Code ↔ Unity pipeline**: Claude Code connected to Unity via CoplayDev MCP bridge. Can create/modify GameObjects, components, and scripts from Terminal or VS Code. Tested successfully April 4 (created and deleted a test cube).
+- **Body occlusion (capsule person)**: Player's real body visible as passthrough silhouette against virtual cave. 12 capsule segments + 5 spheres (head, elbows, shoulders) driven by OVRPlugin.GetBodyState4 (Full Body, 84 joints). Arms, torso, legs, head all tracking correctly. sizeMultiplier 1.4. Depth-only shader with Cull Off. Tested and confirmed working April 5.
+- **Display refresh rate**: Set to 120Hz via SetRefreshRate.cs for smoother visual experience.
+- **Claude Code ↔ Unity pipeline**: Claude Code connected to Unity via CoplayDev MCP bridge. Can create/modify GameObjects, components, and scripts from Terminal or VS Code. Tested successfully April 4 (created and deleted a test cube). Used April 5 to set up BodyOcclusion GameObject and wire all component references.
 - **GitHub docs repo**: State of Project document hosted at https://github.com/JoshuaCrisp/orpheus-docs — editable via Claude Code, fetchable by all conversations.
 
 ---
 
 ## 6. What Doesn't Work Yet
 
-### Body Occlusion (CRITICAL — Blocks Progress)
-- Body tracking DATA is flowing (confirmed via logs)
-- **Approach confirmed:** Movement SDK body tracking joints + capsule primitives with depth-only shader.
-- **Script written (CapsuleBodyOcclusion.cs):** 12 capsule segments + 1 head sphere, driven by OVRPlugin.GetBodyState(), using existing HandOcclusionMaterial. Includes debug mode (gray capsules for verification). Does NOT use EnvironmentDepthManager, AI Building Blocks, or Character Retargeter.
-- **Not yet deployed.** Next step: add script to project, create BodyOcclusion GameObject, wire references, build and test.
-- **Caveat:** OVRPlugin API signatures may differ slightly in v85. If compile errors occur, error messages will be specific and fixable.
-- The Depth API (EnvironmentDepthManager) must remain DISABLED.
+### Body Occlusion — Polish Issues (Non-blocking)
+- **Elbow gaps**: When arm bends tightly, gap visible between upper arm and forearm capsules. Elbow spheres added but coverage not complete at extreme bend angles. Expected to resolve when upgrading from capsule primitives to a proper humanoid mesh driven by Character Retargeter.
+- **Shoulder cutoff**: Head sphere may intersect shoulder sphere, creating visual cutoff when looking down at own shoulders. Also expected to resolve with proper mesh.
+- **Leg tracking responsiveness**: Legs use "Generative Legs" (predicted from upper body, not directly tracked). Inherently less responsive than arm/torso tracking. This is a Quest 3 hardware limitation, not fixable in software.
+- **Body tracking update rate**: Body data arrives at ~36fps regardless of display refresh rate (120Hz). Interpolation/smoothing could make transitions appear smoother but would not reduce latency.
 
 ### Hand Occlusion Border/Halo
 - Thin border of real world visible around hand edges
@@ -266,7 +303,7 @@ Point Light (Position: 0,2,0)
 ## 7. Technical Challenges To Solve
 
 ### Tier 1: Must Solve for Prototype
-1. **Full body occlusion** — See player's real body in VR cave without showing the room. Approach confirmed; script written; awaiting deployment and test.
+1. ~~**Full body occlusion**~~ — **COMPLETE (first pass).** Capsule person deployed and tested. Player sees real body as passthrough silhouette. Polish issues logged in Section 6. Upgrade to proper humanoid mesh deferred to Tier 3.
 2. **Torch tracking** — Track a physical prop while player carries it.
 3. **Passthrough-to-VR transition** — Gradual blend from real world into underworld. Selective Passthrough shader is a strong candidate (see Section 18). Narrative justification for the transition is an open question.
 
@@ -278,7 +315,7 @@ Point Light (Position: 0,2,0)
 
 ### Tier 3: Polish Phase
 8. **Passthrough color linked to torch proximity**
-9. **Hand/body occlusion edge refinement**
+9. **Hand/body occlusion edge refinement** — upgrade capsule person to proper humanoid mesh via Character Retargeter
 10. **Environment visual polish**
 11. **Advanced sound design** (environmental variation, dynamic acoustics per location)
 
@@ -325,7 +362,7 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 | Co-Creative Director role for main conversation | Holds full picture, makes design/architecture decisions | April 5 |
 | Depth API disabled for Orpheus | Occludes entire room, not just body. Confirmed by Researcher. | April 5 |
 | AI Building Blocks not used for body occlusion | No image segmentation in v85; inference engine lacks hardware acceleration on Quest | April 5 |
-| Body occlusion via capsule primitives + depth shader | Direct OVRPlugin.GetBodyState() joint access, 12 capsules + head sphere | April 4-5 |
+| Body occlusion via capsule primitives + depth shader | Direct OVRPlugin.GetBodyState4() joint access, 12 capsules + 5 spheres, sizeMultiplier 1.4 | April 4-5 |
 | Spatial audio promoted to prototype milestone | Sound is what makes the cave real; SDK supports it natively | April 4 |
 | Underworld tone: wet stone, water as dominant sound | Aligned with narrative and atmospheric goals | April 4 |
 | Player is Orpheus (POV) | The experience is told from Orpheus's perspective, not Eurydice's | April 4 |
@@ -384,12 +421,13 @@ Assets/
 │   └── Underworld (active scene)
 ├── Scripts/
 │   ├── InvertMesh.cs
-│   ├── DepthOnlyHand.shader (Custom/DepthOnlyHand)
+│   ├── DepthOnlyHand.shader (Custom/DepthOnlyHand — Cull Off added April 5)
 │   ├── RequestSpatialPermission.cs
 │   ├── RequestBodyTracking.cs
 │   ├── BodyTrackingDebug.cs
 │   ├── PassthroughStyling.cs (REMOVED from scene, file may still exist)
-│   └── CapsuleBodyOcclusion.cs (WRITTEN — not yet added to project)
+│   ├── CapsuleBodyOcclusion.cs (deployed and tested April 5)
+│   └── SetRefreshRate.cs (added April 5)
 ├── Materials/
 │   ├── CaveMaterial
 │   ├── FloorMaterial
@@ -402,19 +440,16 @@ Assets/
 ## 14. Next Session Plan
 
 ### Immediate Next Steps
-1. Add CapsuleBodyOcclusion.cs to Assets/Scripts/
-2. Create `BodyOcclusion` GameObject at scene root
-3. Add `CapsuleBodyOcclusion` component
-4. Wire references: `OVRCameraRig` → Camera Rig field, `HandOcclusionMaterial` → Occlusion Material field
-5. Build with `debugVisible=true` and `TestMaterial` → Debug Material — verify capsule tracking
-6. Build with `debugVisible=false` — verify passthrough body silhouette
-7. Tune capsule sizing if needed
-8. Update this document with test results
+1. ~~Add CapsuleBodyOcclusion.cs to Assets/Scripts/~~ DONE
+2. ~~Create BodyOcclusion GameObject and wire references~~ DONE
+3. ~~Build with debugVisible=true — verify capsule tracking~~ DONE
+4. ~~Build with debugVisible=false — verify passthrough body silhouette~~ DONE
+5. ~~Tune capsule sizing~~ DONE (sizeMultiplier=1.4)
 
-### After Body Occlusion Works
-9. Begin spatial audio setup — Meta XR Audio spatializer plugin, room acoustics component
-10. Prototype portal transition using Selective Passthrough shader
-11. Begin torch tracking research/implementation
+### Next Priorities (Awaiting Co-Creative Director Direction)
+6. Begin spatial audio setup — Meta XR Audio spatializer plugin, room acoustics component
+7. Prototype portal transition using Selective Passthrough shader
+8. Begin torch tracking research/implementation
 
 ---
 
@@ -438,7 +473,7 @@ Assets/
 ## 16. Inter-Team Messages
 
 ### For: Co-Creative Director
-(No new messages — Developer session report from April 4 has been read and integrated into this document)
+- [FROM Developer, April 5] **Body occlusion first pass COMPLETE.** Capsule person deployed, tested, and working. Player sees real body as passthrough silhouette against virtual cave. Both arms, torso, legs, and head tracking correctly. Elbow spheres and shoulder spheres added to fill joint gaps. sizeMultiplier set to 1.4. Display refresh rate set to 120Hz. DepthOnlyHand shader updated with Cull Off. Known polish issues: elbow gaps at extreme bends, shoulder cutoff near head, leg tracking responsiveness limited by Quest 3 generative legs. All polish issues expected to resolve when upgrading to proper humanoid mesh via Character Retargeter (Tier 3). Body occlusion is no longer a blocker. Awaiting direction on next priority.
 
 ### For: Developer
 (No new messages)
@@ -459,7 +494,7 @@ Assets/
 - [FROM Co-Creative Director, April 5] Secondary research: AI Building Blocks capabilities? → **RESOLVED by Researcher April 5. No image segmentation in v85. Read and integrated by Co-Creative Director April 4.**
 - [FROM Researcher, April 5] Depth API findings for Co-Creative Director → **Read and acknowledged April 4. Decision: Depth API stays disabled.**
 - [FROM Researcher, April 5] AI Building Blocks findings for Co-Creative Director → **Read and acknowledged April 4. Decision: AI Building Blocks reserved for future use.**
-- [FROM Researcher, April 5] Body occlusion approach confirmed for Developer → **Read by Developer April 4. Script written using confirmed approach.**
+- [FROM Researcher, April 5] Body occlusion approach confirmed for Developer → **Read by Developer April 5. Script written, deployed, and tested using confirmed approach.**
 - [FROM Developer, April 4] Infrastructure complete: Claude Code + MCP bridge connected, GitHub docs repo created, CapsuleBodyOcclusion.cs written and ready for deployment. → **Read and integrated by Co-Creative Director April 4.**
 
 ---
