@@ -1,5 +1,5 @@
 # ORPHEUS: State of the Project
-## Last Updated: April 5, 2026 (Co-Creative Director — Stencil Portal Approach Adopted)
+## Last Updated: April 5, 2026 (Co-Creative Director — MRUK Room Adaptation Promoted to Prototype)
 
 ---
 
@@ -334,10 +334,11 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 1. ~~**Full body occlusion**~~ — **COMPLETE (first pass).** Capsule person deployed and tested. Player sees real body as passthrough silhouette. Polish issues deferred to Tier 3.
 2. **Torch tracking** — Track a physical prop while player carries it.
 3. **Passthrough-to-VR transition** — Selective Passthrough shell ABANDONED (render pipeline conflicts at enclosure scale). New approach: STENCIL MASK controls where cave geometry renders. Passthrough underlay shows by default wherever cave doesn't render. Portal opening defines the stencil region; stencil expands as player walks through; full cave after crossing. Fallback: Overlay-to-Underlay passthrough layer swap for sharp narrative transition. Developer directed to implement stencil approach.
+4. **Room-aware cave layout** — PROMOTED from Tier 2. Cave geometry adapts to scanned room. Portal aligns with real door. Walkable path avoids real furniture. Required for testability (developer's living room has obstacles) and for Design Principle #6 (portable staging).
 
 ### Tier 2: Important for Prototype Quality
 4. ~~**Spatial audio foundation**~~ — **COMPLETE.** Spatializer plugin, Audio Mixer, room acoustics, test source all working. Further audio work (ambient soundscape, actor voice, additional sources) continues as part of ongoing development.
-5. **Set piece tracking via QR codes or other trackables** — Place set pieces anywhere, world adapts. QR tracking confirmed available in MRUK v85 with 6DOF pose and payload data.
+5. **MRUK room adaptation (PROMOTED TO PROTOTYPE)** — Scan the room, identify floor/walls/door, place portal at real door, route walkable path around real obstacles. Minimum viable version for prototype: room scan on startup, portal placement at detected door, obstacle avoidance for cave path. Full set piece tracking via QR codes remains Tier 2 but room awareness is now Tier 1.
 6. **"Don't look back" detection** — Head rotation threshold detection.
 7. **Bridge wobble tracking** — Arduino accelerometer on physical beam, data to Unity via BLE.
 
@@ -404,6 +405,7 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 | Portal shell architecture directed | Inverted sphere/box with Selective Passthrough material, door-shaped cutout reveals cave. | April 5 |
 | Selective Passthrough shell abandoned | Render pipeline conflicts at enclosure scale (sort order, alpha contamination, batching). Researcher confirmed fundamental incompatibility. | April 5 |
 | Stencil-based portal transition adopted | Cave renders only where stencil allows. Passthrough shows everywhere else by default. Avoids transparent queue. Works with body occlusion. | April 5 |
+| MRUK room adaptation promoted to prototype | Required for testability (real rooms have furniture) and for Design Principle #6 (portable staging). Minimum viable: scan room, place portal at door, avoid obstacles. | April 5 |
 
 ---
 
@@ -416,6 +418,7 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 | Torch tracking method | Wrist tracking + Arduino IMU vs. SDK object tracking. QR code tracking confirmed available but updates at lower frequency (not frame-perfect). May be suitable for a stationary torch holder but not a hand-carried torch. | OPEN — needs documentation review and prototyping |
 | What does the player find at the end? | Real actress holding a prop hand (original concept). Success/failure determined by whether they look back on the return. Details of the encounter need development. | OPEN — needs creative discussion |
 | How does the return journey differ from the descent? | The "don't look back" rule must have sensory weight. The actor's spatialized voice behind the player, source directivity causing voice to muffle as player faces forward — these create a felt rule. The return should feel different from the descent. | OPEN — needs creative discussion |
+| How much should the cave adapt to the room? | Minimum: portal at real door, path avoids obstacles. Maximum: cave walls align with real walls, furniture becomes boulders, room shape influences cave shape. The right level of adaptation is a design question that affects both the theatrical and home modes. | OPEN — needs creative discussion and prototyping |
 
 ---
 
