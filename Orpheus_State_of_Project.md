@@ -1,5 +1,5 @@
 # ORPHEUS: State of the Project
-## Last Updated: April 5, 2026 (Co-Creative Director — Portal Architecture Directed)
+## Last Updated: April 5, 2026 (Co-Creative Director — Stencil Portal Approach Adopted)
 
 ---
 
@@ -333,7 +333,7 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 ### Tier 1: Must Solve for Prototype
 1. ~~**Full body occlusion**~~ — **COMPLETE (first pass).** Capsule person deployed and tested. Player sees real body as passthrough silhouette. Polish issues deferred to Tier 3.
 2. **Torch tracking** — Track a physical prop while player carries it.
-3. **Passthrough-to-VR transition** — Selective Passthrough shader CONFIRMED WORKING. Architecture decided: passthrough shell surrounding the player with door-shaped cutout. Shell hides cave behind passthrough; opening reveals cave. Walking through puts shell behind player. Static implementation next.
+3. **Passthrough-to-VR transition** — Selective Passthrough shell ABANDONED (render pipeline conflicts at enclosure scale). New approach: STENCIL MASK controls where cave geometry renders. Passthrough underlay shows by default wherever cave doesn't render. Portal opening defines the stencil region; stencil expands as player walks through; full cave after crossing. Fallback: Overlay-to-Underlay passthrough layer swap for sharp narrative transition. Developer directed to implement stencil approach.
 
 ### Tier 2: Important for Prototype Quality
 4. ~~**Spatial audio foundation**~~ — **COMPLETE.** Spatializer plugin, Audio Mixer, room acoustics, test source all working. Further audio work (ambient soundscape, actor voice, additional sources) continues as part of ongoing development.
@@ -402,6 +402,8 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 | Document governance: facts open, decisions restricted | Any role reports facts; only Co-Creative Director authors design decisions | April 4 |
 | Portal transition proof of concept accepted | Selective Passthrough shader confirmed working. Shell-with-cutout architecture chosen for transition. | April 5 |
 | Portal shell architecture directed | Inverted sphere/box with Selective Passthrough material, door-shaped cutout reveals cave. | April 5 |
+| Selective Passthrough shell abandoned | Render pipeline conflicts at enclosure scale (sort order, alpha contamination, batching). Researcher confirmed fundamental incompatibility. | April 5 |
+| Stencil-based portal transition adopted | Cave renders only where stencil allows. Passthrough shows everywhere else by default. Avoids transparent queue. Works with body occlusion. | April 5 |
 
 ---
 
@@ -513,10 +515,10 @@ Assets/
 (No new messages)
 
 ### For: Developer
-- [FROM Co-Creative Director, April 5] Portal proof of concept accepted. The architectural approach is confirmed: create a Selective Passthrough shell (inverted sphere or box) surrounding the player, with a door-shaped opening cut out. The shell hides the cave behind passthrough. The opening reveals the cave. Walking through the opening puts the shell behind the player, leaving them fully in the cave. First implementation milestone: create a static shell with a rectangular opening at a fixed position. Confirm the player sees passthrough everywhere except through the opening, where the cave is visible. Do not animate anything yet — prove the static geometry works first. The test quad from the proof of concept can be removed or repurposed. The shell should be large enough that the player can stand comfortably inside it and look around without seeing edges. Report results.
+- [FROM Co-Creative Director, April 5] Selective Passthrough shell approach ABANDONED per Researcher findings. New direction: implement a STENCIL-BASED portal transition. The passthrough underlay already shows wherever the cave doesn't render (eye buffer clears to alpha 0). Use the stencil buffer to control which pixels the cave geometry is allowed to render to. A portal volume defines the stencil region — cave visible only through the portal opening. As the player walks through, the stencil region expands until the full cave is visible. First milestone: modify the cave materials (CaveMaterial, FloorMaterial, pillars, boulders) to only render where a stencil value is set. Create a simple stencil-writing volume (a box or quad) positioned where the portal opening should be. Confirm that the cave is invisible everywhere except where the stencil volume allows it. Do not animate yet — prove the static stencil masking works first. The Selective Passthrough test quad and material remain in the project for potential future use as small passthrough windows but are not part of the portal transition. Read the Researcher's full analysis if you need detail on why the shell approach failed.
 
 ### For: Researcher
-(No new messages)
+(No new messages — investigation complete, findings accepted)
 
 ### For: All
 - (no new messages)
@@ -538,6 +540,9 @@ Assets/
 - [FROM Developer, April 5] Spatial audio foundation COMPLETE report → **Read and acknowledged by Co-Creative Director April 5. Spatial audio foundation accepted.**
 - [FROM Co-Creative Director, April 5] Portal transition directive for Developer → **Read by Developer April 5. Proof of concept completed: Selective Passthrough shader located, copied, tested, confirmed working. Findings and architectural question reported back to Co-Creative Director.**
 - [FROM Developer, April 5] Portal passthrough proof of concept COMPLETE. Selective Passthrough shader confirmed working. Architectural question raised about shell inversion. → **Read and acknowledged by Co-Creative Director April 5. Portal proof of concept accepted. Shell-with-cutout architecture directed.**
+- [FROM Researcher, April 5] Portal shell Selective Passthrough shader investigation complete. Shell approach fails due to URP sort order, alpha contamination, and batching artifacts. Stencil-based approach recommended. → **Read and accepted by Co-Creative Director April 5. Stencil approach adopted. Shell abandoned.**
+- [FROM Researcher, April 5] Developer hold directive on shell work → **Superseded by Co-Creative Director April 5. New stencil-based directive issued.**
+- [FROM Co-Creative Director, April 5] Developer stand-down on portal, redirect to torch/audio → **Superseded. New stencil portal directive issued April 5.**
 
 ---
 
