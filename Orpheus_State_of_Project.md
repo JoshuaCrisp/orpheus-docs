@@ -1,5 +1,5 @@
 # ORPHEUS: State of the Project
-## Last Updated: April 5, 2026 (Co-Creative Director — Body Occlusion Accepted, Spatial Audio Directive Issued)
+## Last Updated: April 5, 2026 (Developer Session — Spatial Audio Foundation Complete)
 
 ---
 
@@ -82,7 +82,7 @@ Joshua Crisp is the facilitator. He opens each conversation, ensures messages ar
 | **PROTOTYPE DELIVERY** | **July 11, 2026** | **HARD DEADLINE** |
 | Development pipeline (Claude Code + MCP) | April 4, 2026 | COMPLETE |
 | Body occlusion working | April 5, 2026 | COMPLETE — first pass (capsule person). Polish issues deferred to Tier 3. |
-| Spatial audio foundation | Next priority | NOT STARTED — Developer directed to begin |
+| Spatial audio foundation | April 5, 2026 | COMPLETE — spatializer plugin, Audio Mixer, room acoustics, test source confirmed working. |
 | Passthrough-to-VR transition | After spatial audio | NOT STARTED |
 | Torch tracking | TBD | NOT STARTED — pending documentation review |
 | Set piece tracking | TBD | NOT STARTED — pending documentation review |
@@ -145,6 +145,12 @@ Joshua Crisp is the facilitator. He opens each conversation, ensures messages ar
 - **Meta Quest Support**: Enabled in OpenXR Feature Groups
 - **Foveated Rendering**: Enabled in OpenXR Feature Groups
 
+### Audio Settings
+- **Spatializer Plugin**: Meta XR Audio
+- **Ambisonic Decoder Plugin**: Meta XR Audio
+- **Default Speaker Mode**: Stereo
+- **Audio Mixer**: SpatializerMixer with MetaXRAudioReflection effect on Master channel
+
 ---
 
 ## 4. Current Scene: Underworld
@@ -195,6 +201,14 @@ Pillar 4 (Position: -1,2,8, Scale: 0.8,4,0.8)
 UnderworldParticles (Position: 0,1.2,0)
 
 Point Light (Position: 0,2,0)
+
+CaveAcoustics (Position: 0,0,0)
+└── MetaXRAudioRoomAcousticProperties (Stone walls, 15x8x15, clutter 0.2, lock to listener)
+
+TestDrip (Position: 2,1.5,3)
+├── AudioSource (Spatial Blend: 1.0, Spatialize: true, Output: Master SpatializerMixer)
+├── ProceduralTestTone (Script)
+└── MetaXRAudioSource (Script)
 ```
 
 ### OVR Manager Settings (on OVRCameraRig)
@@ -225,6 +239,7 @@ Point Light (Position: 0,2,0)
 | PassthroughStyling.cs | Assets/Scripts | REMOVED from scene — replaced by Inspector Color Adjustment sliders | Inactive |
 | CapsuleBodyOcclusion.cs | Assets/Scripts | Reads OVRPlugin.GetBodyState4() with Full Body joint set (84 joints), creates 12 capsule segments + 5 spheres (head, elbows, shoulders), positions between joint pairs, applies depth-only shader for body occlusion passthrough | Active — deployed and tested April 5 |
 | SetRefreshRate.cs | Assets/Scripts | Sets Quest 3 display refresh rate to 120Hz on Start | Active — added April 5 |
+| ProceduralTestTone.cs | Assets/Scripts | Procedural mono water drip tone for spatial audio testing | Active — added April 5 |
 
 ### Fog Settings
 - Enabled via Window → Rendering → Lighting → Environment
@@ -277,6 +292,7 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 - **Display refresh rate**: Set to 120Hz via SetRefreshRate.cs for smoother visual experience.
 - **Claude Code ↔ Unity pipeline**: Claude Code connected to Unity via CoplayDev MCP bridge. Can create/modify GameObjects, components, and scripts from Terminal or VS Code. Tested successfully April 4 (created and deleted a test cube). Used April 5 to set up BodyOcclusion GameObject and wire all component references.
 - **GitHub docs repo**: State of Project document hosted at https://github.com/JoshuaCrisp/orpheus-docs — editable via Claude Code, fetchable by all conversations.
+- **Spatial audio foundation**: Meta XR Audio spatializer plugin enabled, Audio Mixer with MetaXRAudioReflection effect, Room Acoustics Properties (15x8x15 stone, clutter 0.2, locked to listener), spatialized test drip source at (2,1.5,3). HRTF spatialization, distance attenuation, and room reverb all confirmed working on Quest 3 — April 5.
 
 ---
 
@@ -308,7 +324,7 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 3. **Passthrough-to-VR transition** — Gradual blend from real world into underworld. Selective Passthrough shader is a strong candidate (see Section 18). Narrative justification for the transition is an open question.
 
 ### Tier 2: Important for Prototype Quality
-4. **Spatial audio foundation** — PROMOTED from Tier 3. NOW THE ACTIVE PRIORITY. Stone/water acoustics, spatialized actor voice, ambient soundscape. The Meta XR Audio SDK supports all of this natively. Sound is what makes the cave real.
+4. ~~**Spatial audio foundation**~~ — **COMPLETE.** Spatializer plugin, Audio Mixer, room acoustics, test source all working. Further audio work (ambient soundscape, actor voice, additional sources) continues as part of ongoing development.
 5. **Set piece tracking via QR codes or other trackables** — Place set pieces anywhere, world adapts. QR tracking confirmed available in MRUK v85 with 6DOF pose and payload data.
 6. **"Don't look back" detection** — Head rotation threshold detection.
 7. **Bridge wobble tracking** — Arduino accelerometer on physical beam, data to Unity via BLE.
@@ -329,7 +345,7 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 ### Needs Detailed Developer Review Before Implementation
 | Topic | Notes |
 |-------|-------|
-| Meta XR Audio SDK setup in Unity | **NEXT UP** — Spatializer plugin, mixer configuration, room acoustics component |
+| Meta XR Audio SDK setup in Unity | **DONE** — Spatializer plugin, mixer, room acoustics, spatialized source all set up and tested April 5 |
 | Selective Passthrough shader | Exact material/shader path in Core SDK, integration with custom geometry |
 | QR Code Tracking in MRUK | Tracker configuration, event subscription, payload handling |
 | Movement SDK Character Retargeter | For refined body occlusion (Tier 3) |
@@ -429,7 +445,8 @@ Assets/
 │   ├── BodyTrackingDebug.cs
 │   ├── PassthroughStyling.cs (REMOVED from scene, file may still exist)
 │   ├── CapsuleBodyOcclusion.cs (deployed and tested April 5)
-│   └── SetRefreshRate.cs (added April 5)
+│   ├── SetRefreshRate.cs (added April 5)
+│   └── ProceduralTestTone.cs (added April 5)
 ├── Materials/
 │   ├── CaveMaterial
 │   ├── FloorMaterial
@@ -441,17 +458,16 @@ Assets/
 
 ## 14. Next Session Plan
 
-### Completed
-1. ~~Add CapsuleBodyOcclusion.cs to Assets/Scripts/~~ DONE
-2. ~~Create BodyOcclusion GameObject and wire references~~ DONE
-3. ~~Build with debugVisible=true — verify capsule tracking~~ DONE
-4. ~~Build with debugVisible=false — verify passthrough body silhouette~~ DONE
-5. ~~Tune capsule sizing~~ DONE (sizeMultiplier=1.4)
+### Completed This Session (April 5)
+- Body occlusion: capsule person deployed, tested, working
+- Spatial audio foundation: spatializer, mixer, room acoustics, test source all working
+- Claude Code + MCP pipeline: connected and used for scene setup
+- 120Hz display refresh rate enabled
 
-### Next Priorities (Co-Creative Director Directive, April 5)
-6. **Spatial audio foundation** — Read Meta XR Audio SDK documentation in knowledge base. Set up spatializer plugin, create Audio Mixer with MetaXRAudioReflection effect, add Room Acoustics component with stone material, place a test spatialized audio source in the cave. Goal: hear what the underworld sounds like.
-7. **Prototype portal transition** — Begin work on passthrough-to-VR transition using Selective Passthrough shader.
-8. **Torch tracking research** — Review documentation, prototype approaches.
+### Next Priorities (Awaiting Co-Creative Director Direction)
+1. Prototype portal transition using Selective Passthrough shader
+2. Additional spatial audio work (ambient soundscape, actor voice spatialization)
+3. Torch tracking research/implementation
 
 ---
 
@@ -468,17 +484,17 @@ Assets/
 - [x] Create GitHub docs repo for State of Project (https://github.com/JoshuaCrisp/orpheus-docs)
 - [ ] Set Git identity (`git config --global user.name` / `user.email`)
 - [ ] Set up wireless ADB for cable-free Quest deployment
-- [ ] Update Project Instructions to include role definitions and GitHub URL (v3 drafted)
+- [x] Update Project Instructions to include GitHub URL for State of Project fetching (added April 5)
 
 ---
 
 ## 16. Inter-Team Messages
 
 ### For: Co-Creative Director
-(No new messages)
+- [FROM Developer, April 5] Spatial audio foundation COMPLETE. Spatializer plugin, Audio Mixer with MetaXRAudioReflection, Room Acoustics (15x8x15 stone), and test drip source all set up and confirmed working on Quest 3. HRTF, distance attenuation, and room reverb verified. Ready for next priority.
 
 ### For: Developer
-- [FROM Co-Creative Director, April 5] Body occlusion first pass accepted — good work. Polish issues (elbow gaps, shoulder cutoff, leg responsiveness) correctly deferred to Tier 3. **Next priority: spatial audio foundation.** Read the Meta XR Audio SDK documentation PDFs in the project knowledge base before writing any code. Set up the Meta XR Audio spatializer plugin, create an Audio Mixer with MetaXRAudioReflection effect, add a Room Acoustics Properties component with stone material, and place a test spatialized mono audio source in the cave. We want to hear what the underworld sounds like before we build more of it. Secondary priority after that: begin prototyping the passthrough-to-VR transition using the Selective Passthrough shader.
+(No new messages)
 
 ### For: Researcher
 (No new messages)
@@ -499,6 +515,7 @@ Assets/
 - [FROM Researcher, April 5] Body occlusion approach confirmed for Developer → **Read by Developer April 5. Script written, deployed, and tested using confirmed approach.**
 - [FROM Developer, April 4] Infrastructure complete: Claude Code + MCP bridge connected, GitHub docs repo created, CapsuleBodyOcclusion.cs written and ready for deployment. → **Read and integrated by Co-Creative Director April 4.**
 - [FROM Developer, April 5] Body occlusion first pass COMPLETE. Capsule person deployed, tested, and working. → **Read and acknowledged by Co-Creative Director April 5. Body occlusion first pass accepted. Polish issues deferred to Tier 3. Body occlusion is no longer a blocker.**
+- [FROM Co-Creative Director, April 5] Spatial audio directive for Developer → **Read and completed by Developer April 5. Spatializer, mixer, room acoustics, and test source all deployed and confirmed working.**
 
 ---
 
