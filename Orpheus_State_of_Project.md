@@ -1,5 +1,5 @@
 # ORPHEUS: State of the Project
-## Last Updated: April 5, 2026 (Developer Session — Body Occlusion Deployed and Tested)
+## Last Updated: April 5, 2026 (Co-Creative Director — Body Occlusion Accepted, Spatial Audio Directive Issued)
 
 ---
 
@@ -81,9 +81,9 @@ Joshua Crisp is the facilitator. He opens each conversation, ensures messages ar
 |-----------|------------|--------|
 | **PROTOTYPE DELIVERY** | **July 11, 2026** | **HARD DEADLINE** |
 | Development pipeline (Claude Code + MCP) | April 4, 2026 | COMPLETE |
-| Body occlusion working | ASAP — blocks all other work | COMPLETE — first pass (capsule person). Polish issues logged in Section 6. |
-| Passthrough-to-VR transition | TBD | NOT STARTED |
-| Spatial audio foundation | TBD | NOT STARTED — promoted to prototype milestone |
+| Body occlusion working | April 5, 2026 | COMPLETE — first pass (capsule person). Polish issues deferred to Tier 3. |
+| Spatial audio foundation | Next priority | NOT STARTED — Developer directed to begin |
+| Passthrough-to-VR transition | After spatial audio | NOT STARTED |
 | Torch tracking | TBD | NOT STARTED — pending documentation review |
 | Set piece tracking | TBD | NOT STARTED — pending documentation review |
 | Full walkthrough prototype | Before July 11 | NOT STARTED |
@@ -282,7 +282,7 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 
 ## 6. What Doesn't Work Yet
 
-### Body Occlusion — Polish Issues (Non-blocking)
+### Body Occlusion — Polish Issues (Non-blocking, Deferred to Tier 3)
 - **Elbow gaps**: When arm bends tightly, gap visible between upper arm and forearm capsules. Elbow spheres added but coverage not complete at extreme bend angles. Expected to resolve when upgrading from capsule primitives to a proper humanoid mesh driven by Character Retargeter.
 - **Shoulder cutoff**: Head sphere may intersect shoulder sphere, creating visual cutoff when looking down at own shoulders. Also expected to resolve with proper mesh.
 - **Leg tracking responsiveness**: Legs use "Generative Legs" (predicted from upper body, not directly tracked). Inherently less responsive than arm/torso tracking. This is a Quest 3 hardware limitation, not fixable in software.
@@ -303,12 +303,12 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 ## 7. Technical Challenges To Solve
 
 ### Tier 1: Must Solve for Prototype
-1. ~~**Full body occlusion**~~ — **COMPLETE (first pass).** Capsule person deployed and tested. Player sees real body as passthrough silhouette. Polish issues logged in Section 6. Upgrade to proper humanoid mesh deferred to Tier 3.
+1. ~~**Full body occlusion**~~ — **COMPLETE (first pass).** Capsule person deployed and tested. Player sees real body as passthrough silhouette. Polish issues deferred to Tier 3.
 2. **Torch tracking** — Track a physical prop while player carries it.
 3. **Passthrough-to-VR transition** — Gradual blend from real world into underworld. Selective Passthrough shader is a strong candidate (see Section 18). Narrative justification for the transition is an open question.
 
 ### Tier 2: Important for Prototype Quality
-4. **Spatial audio foundation** — PROMOTED from Tier 3. Stone/water acoustics, spatialized actor voice, ambient soundscape. The Meta XR Audio SDK supports all of this natively. Sound is what makes the cave real.
+4. **Spatial audio foundation** — PROMOTED from Tier 3. NOW THE ACTIVE PRIORITY. Stone/water acoustics, spatialized actor voice, ambient soundscape. The Meta XR Audio SDK supports all of this natively. Sound is what makes the cave real.
 5. **Set piece tracking via QR codes or other trackables** — Place set pieces anywhere, world adapts. QR tracking confirmed available in MRUK v85 with 6DOF pose and payload data.
 6. **"Don't look back" detection** — Head rotation threshold detection.
 7. **Bridge wobble tracking** — Arduino accelerometer on physical beam, data to Unity via BLE.
@@ -329,10 +329,10 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 ### Needs Detailed Developer Review Before Implementation
 | Topic | Notes |
 |-------|-------|
-| Movement SDK Character Retargeter | For refined body occlusion after capsule-person works |
-| Meta XR Audio SDK setup in Unity | Spatializer plugin, mixer configuration, room acoustics component |
+| Meta XR Audio SDK setup in Unity | **NEXT UP** — Spatializer plugin, mixer configuration, room acoustics component |
 | Selective Passthrough shader | Exact material/shader path in Core SDK, integration with custom geometry |
 | QR Code Tracking in MRUK | Tracker configuration, event subscription, payload handling |
+| Movement SDK Character Retargeter | For refined body occlusion (Tier 3) |
 
 ---
 
@@ -363,7 +363,9 @@ The Co-Creative Director has read all uploaded SDK documentation at a high level
 | Depth API disabled for Orpheus | Occludes entire room, not just body. Confirmed by Researcher. | April 5 |
 | AI Building Blocks not used for body occlusion | No image segmentation in v85; inference engine lacks hardware acceleration on Quest | April 5 |
 | Body occlusion via capsule primitives + depth shader | Direct OVRPlugin.GetBodyState4() joint access, 12 capsules + 5 spheres, sizeMultiplier 1.4 | April 4-5 |
+| Body occlusion first pass accepted | Polish issues deferred to Tier 3. Body is no longer a blocker. | April 5 |
 | Spatial audio promoted to prototype milestone | Sound is what makes the cave real; SDK supports it natively | April 4 |
+| Spatial audio is next active priority | Sound before portal. We need to hear the cave before we open the door into it. | April 5 |
 | Underworld tone: wet stone, water as dominant sound | Aligned with narrative and atmospheric goals | April 4 |
 | Player is Orpheus (POV) | The experience is told from Orpheus's perspective, not Eurydice's | April 4 |
 | State of Project on GitHub | Single source of truth, editable via Claude Code, fetchable by all conversations | April 4 |
@@ -439,17 +441,17 @@ Assets/
 
 ## 14. Next Session Plan
 
-### Immediate Next Steps
+### Completed
 1. ~~Add CapsuleBodyOcclusion.cs to Assets/Scripts/~~ DONE
 2. ~~Create BodyOcclusion GameObject and wire references~~ DONE
 3. ~~Build with debugVisible=true — verify capsule tracking~~ DONE
 4. ~~Build with debugVisible=false — verify passthrough body silhouette~~ DONE
 5. ~~Tune capsule sizing~~ DONE (sizeMultiplier=1.4)
 
-### Next Priorities (Awaiting Co-Creative Director Direction)
-6. Begin spatial audio setup — Meta XR Audio spatializer plugin, room acoustics component
-7. Prototype portal transition using Selective Passthrough shader
-8. Begin torch tracking research/implementation
+### Next Priorities (Co-Creative Director Directive, April 5)
+6. **Spatial audio foundation** — Read Meta XR Audio SDK documentation in knowledge base. Set up spatializer plugin, create Audio Mixer with MetaXRAudioReflection effect, add Room Acoustics component with stone material, place a test spatialized audio source in the cave. Goal: hear what the underworld sounds like.
+7. **Prototype portal transition** — Begin work on passthrough-to-VR transition using Selective Passthrough shader.
+8. **Torch tracking research** — Review documentation, prototype approaches.
 
 ---
 
@@ -473,10 +475,10 @@ Assets/
 ## 16. Inter-Team Messages
 
 ### For: Co-Creative Director
-- [FROM Developer, April 5] **Body occlusion first pass COMPLETE.** Capsule person deployed, tested, and working. Player sees real body as passthrough silhouette against virtual cave. Both arms, torso, legs, and head tracking correctly. Elbow spheres and shoulder spheres added to fill joint gaps. sizeMultiplier set to 1.4. Display refresh rate set to 120Hz. DepthOnlyHand shader updated with Cull Off. Known polish issues: elbow gaps at extreme bends, shoulder cutoff near head, leg tracking responsiveness limited by Quest 3 generative legs. All polish issues expected to resolve when upgrading to proper humanoid mesh via Character Retargeter (Tier 3). Body occlusion is no longer a blocker. Awaiting direction on next priority.
+(No new messages)
 
 ### For: Developer
-(No new messages)
+- [FROM Co-Creative Director, April 5] Body occlusion first pass accepted — good work. Polish issues (elbow gaps, shoulder cutoff, leg responsiveness) correctly deferred to Tier 3. **Next priority: spatial audio foundation.** Read the Meta XR Audio SDK documentation PDFs in the project knowledge base before writing any code. Set up the Meta XR Audio spatializer plugin, create an Audio Mixer with MetaXRAudioReflection effect, add a Room Acoustics Properties component with stone material, and place a test spatialized mono audio source in the cave. We want to hear what the underworld sounds like before we build more of it. Secondary priority after that: begin prototyping the passthrough-to-VR transition using the Selective Passthrough shader.
 
 ### For: Researcher
 (No new messages)
@@ -496,6 +498,7 @@ Assets/
 - [FROM Researcher, April 5] AI Building Blocks findings for Co-Creative Director → **Read and acknowledged April 4. Decision: AI Building Blocks reserved for future use.**
 - [FROM Researcher, April 5] Body occlusion approach confirmed for Developer → **Read by Developer April 5. Script written, deployed, and tested using confirmed approach.**
 - [FROM Developer, April 4] Infrastructure complete: Claude Code + MCP bridge connected, GitHub docs repo created, CapsuleBodyOcclusion.cs written and ready for deployment. → **Read and integrated by Co-Creative Director April 4.**
+- [FROM Developer, April 5] Body occlusion first pass COMPLETE. Capsule person deployed, tested, and working. → **Read and acknowledged by Co-Creative Director April 5. Body occlusion first pass accepted. Polish issues deferred to Tier 3. Body occlusion is no longer a blocker.**
 
 ---
 
