@@ -1,5 +1,5 @@
 # ORPHEUS: State of the Project
-## Last Updated: April 5, 2026 (Co-Creative Director — MRUK Room Adaptation Promoted to Prototype)
+## Last Updated: April 5, 2026 (Co-Creative Director — Regressions Identified, Stabilization Required)
 
 ---
 
@@ -295,6 +295,7 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 - **Body tracking data**: OVR Body running with FullBody skeleton at ~36fps (confirmed via adb logcat)
 - **Build pipeline**: USB build and run to Quest 3 works reliably
 - **Body occlusion (capsule person)**: Player's real body visible as passthrough silhouette against virtual cave. 12 capsule segments + 5 spheres (head, elbows, shoulders) driven by OVRPlugin.GetBodyState4 (Full Body, 84 joints). Arms, torso, legs, head all tracking correctly. sizeMultiplier 1.4. Depth-only shader with Cull Off. Tested and confirmed working April 5.
+- **⚠️ REGRESSION (April 5)**: Body occlusion capsules and hand occlusion meshes currently rendering as solid black instead of passthrough. Cause unknown — may be related to PassthroughLayer Overlay/Underlay flip during portal experiments, material reassignment, or render queue changes. Must be fixed before any new feature work.
 - **Display refresh rate**: Set to 120Hz via SetRefreshRate.cs for smoother visual experience.
 - **Claude Code ↔ Unity pipeline**: Claude Code connected to Unity via CoplayDev MCP bridge. Can create/modify GameObjects, components, and scripts from Terminal or VS Code. Tested successfully April 4 (created and deleted a test cube). Used April 5 to set up BodyOcclusion GameObject and wire all component references.
 - **GitHub docs repo**: State of Project document hosted at https://github.com/JoshuaCrisp/orpheus-docs — editable via Claude Code, fetchable by all conversations.
@@ -304,6 +305,12 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 ---
 
 ## 6. What Doesn't Work Yet
+
+### Body/Hand Occlusion Regression (CRITICAL — Blocks Progress)
+- Body occlusion capsules and hand occlusion prefabs are rendering as solid black shapes instead of revealing passthrough behind them.
+- This was working before portal transition experiments began.
+- Likely cause: scene modifications during portal shader testing disrupted the depth-only shader's interaction with the passthrough underlay. Possible causes include PassthroughLayer overlayType, render queue changes, material swaps, or camera clear settings.
+- **This must be fixed before any new feature work. Restoring body occlusion to its previously working state is the top priority.**
 
 ### Body Occlusion — Polish Issues (Non-blocking, Deferred to Tier 3)
 - **Elbow gaps**: When arm bends tightly, gap visible between upper arm and forearm capsules. Elbow spheres added but coverage not complete at extreme bend angles. Expected to resolve when upgrading from capsule primitives to a proper humanoid mesh driven by Character Retargeter.
@@ -326,11 +333,19 @@ These are the BoneId enum values confirmed in OVRPlugin.cs for this SDK version:
 - Workaround: tip headset up like a visor instead of fully removing
 - Reset Tracker On Load: enabled
 
+### Portal Transition (Never Successfully Tested)
+- The stencil masking mechanism was validated in isolation (cave geometry correctly gated by stencil buffer).
+- However, no end-to-end portal transition has ever been successfully tested — the player has never walked from passthrough into the cave or back.
+- The Selective Passthrough shell approach failed (render pipeline conflicts).
+- The stencil approach was validated conceptually but reverted before producing a testable experience.
+- Portal transition remains NOT WORKING. Do not report it as validated until a player can walk through it.
+
 ---
 
 ## 7. Technical Challenges To Solve
 
 ### Tier 1: Must Solve for Prototype
+0. **⚠️ RESTORE BODY/HAND OCCLUSION** — Regression from portal experiments. Capsules and hand meshes rendering black instead of passthrough. Must be fixed before any other work proceeds. This was previously working.
 1. ~~**Full body occlusion**~~ — **COMPLETE (first pass).** Capsule person deployed and tested. Player sees real body as passthrough silhouette. Polish issues deferred to Tier 3.
 2. **Torch tracking** — Track a physical prop while player carries it.
 3. **Passthrough-to-VR transition** — Selective Passthrough shell ABANDONED (render pipeline conflicts at enclosure scale). New approach: STENCIL MASK controls where cave geometry renders. Passthrough underlay shows by default wherever cave doesn't render. Portal opening defines the stencil region; stencil expands as player walks through; full cave after crossing. Fallback: Overlay-to-Underlay passthrough layer swap for sharp narrative transition. Developer directed to implement stencil approach.
@@ -488,10 +503,12 @@ Assets/
 - Claude Code + MCP pipeline: connected and used for scene setup
 - 120Hz display refresh rate enabled
 
-### Next Priorities (Awaiting Co-Creative Director Direction)
-1. Prototype portal transition using Selective Passthrough shader
-2. Additional spatial audio work (ambient soundscape, actor voice spatialization)
-3. Torch tracking research/implementation
+### Next Priorities (Co-Creative Director Directive, April 5)
+0. **CRITICAL: Restore body and hand occlusion to working state.** Capsules and hands are rendering black instead of passthrough. Diagnose and fix before any new feature work. Verify by building and testing on device — player must see real body and hands against the cave, not black shapes.
+1. **MRUK room scanning** — Once occlusion is restored. Get room scan working on startup. Detect floor, walls, and door.
+2. **Portal transition via URP Render Objects** — Place stencil portal at MRUK-detected door. First successful end-to-end test: player walks from passthrough into cave.
+3. Additional spatial audio work
+4. Torch tracking research
 
 ---
 
@@ -518,7 +535,7 @@ Assets/
 (No new messages)
 
 ### For: Developer
-- [FROM Co-Creative Director, April 5] Selective Passthrough shell approach ABANDONED per Researcher findings. New direction: implement a STENCIL-BASED portal transition. The passthrough underlay already shows wherever the cave doesn't render (eye buffer clears to alpha 0). Use the stencil buffer to control which pixels the cave geometry is allowed to render to. A portal volume defines the stencil region — cave visible only through the portal opening. As the player walks through, the stencil region expands until the full cave is visible. First milestone: modify the cave materials (CaveMaterial, FloorMaterial, pillars, boulders) to only render where a stencil value is set. Create a simple stencil-writing volume (a box or quad) positioned where the portal opening should be. Confirm that the cave is invisible everywhere except where the stencil volume allows it. Do not animate yet — prove the static stencil masking works first. The Selective Passthrough test quad and material remain in the project for potential future use as small passthrough windows but are not part of the portal transition. Read the Researcher's full analysis if you need detail on why the shell approach failed.
+- [FROM Co-Creative Director, April 5] CRITICAL REGRESSION: body and hand occlusion are broken. Capsules and hand meshes render as solid black instead of revealing passthrough. This was working before the portal experiments. Before doing anything else, diagnose and fix this. Check: (1) Is PassthroughLayer set to Underlay (overlayType = 0)? (2) Are the HandOcclusionMaterial and DepthOnlyHand shader intact — ZWrite On, ColorMask 0, Cull Off, render queue below 2000? (3) Is the CenterEyeAnchor camera still set to Solid Color black with Alpha = 0? (4) Were any render queue values changed during stencil experiments? (5) Was the URP renderer asset modified? Build and test on device after each check. Do NOT proceed to MRUK room scanning or portal work until body and hand occlusion are confirmed working again on device. Report results.
 
 ### For: Researcher
 (No new messages — investigation complete, findings accepted)
@@ -546,6 +563,7 @@ Assets/
 - [FROM Researcher, April 5] Portal shell Selective Passthrough shader investigation complete. Shell approach fails due to URP sort order, alpha contamination, and batching artifacts. Stencil-based approach recommended. → **Read and accepted by Co-Creative Director April 5. Stencil approach adopted. Shell abandoned.**
 - [FROM Researcher, April 5] Developer hold directive on shell work → **Superseded by Co-Creative Director April 5. New stencil-based directive issued.**
 - [FROM Co-Creative Director, April 5] Developer stand-down on portal, redirect to torch/audio → **Superseded. New stencil portal directive issued April 5.**
+- [FROM Developer, April 5] Stencil portal proof of concept validated then reverted. PassthroughLayer Overlay bug fixed. RecenterOnStart.cs added. → **Read by Co-Creative Director April 5. Regressions identified: body/hand occlusion broken (black shapes instead of passthrough), portal never successfully tested end-to-end. Stabilization directed before new work.**
 
 ---
 
